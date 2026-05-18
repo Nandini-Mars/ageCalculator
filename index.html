@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Age Calculator</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      body {
+        min-height: 100vh;
+        background: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .content {
+        width: 750px;
+        background: white;
+        padding: 45px;
+        border-radius: 20px 20px 180px 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      }
+
+      .inputs {
+        display: flex;
+        gap: 20px;
+      }
+
+      .input {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .input label {
+        font-size: 12px;
+        letter-spacing: 3px;
+        color: #ff6b6b;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .input input {
+        width: 160px;
+        height: 70px;
+        border: 1px solid #dcdcdc;
+        border-radius: 10px;
+        padding: 15px;
+        font-size: 32px;
+        font-weight: 700;
+        outline: none;
+        transition: 0.3s;
+      }
+
+      .input input:focus {
+        border-color: #854dff;
+      }
+
+      .input input:hover {
+        border-color: #854dff;
+      }
+
+      .error {
+        color: red;
+        font-size: 12px;
+        margin-top: 6px;
+        font-style: italic;
+        min-height: 16px;
+      }
+
+      .divider {
+        display: flex;
+        align-items: center;
+        margin: 20px 0;
+      }
+
+      .divider hr {
+        flex: 1;
+        border: none;
+        border-top: 1px solid #ddd;
+      }
+
+      #calculateBtn {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: none;
+        background: #854dff;
+        color: white;
+        font-size: 40px;
+        cursor: pointer;
+        transition: 0.3s;
+        margin-left: 15px;
+      }
+
+      #calculateBtn:hover {
+        background: black;
+      }
+
+      .results {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .result-line {
+        font-size: 75px;
+        font-style: italic;
+        font-weight: 800;
+        line-height: 1;
+      }
+
+      .result-line span {
+        color: #854dff;
+      }
+
+      @media (max-width: 768px) {
+        .content {
+          width: 300px;
+          padding: 25px;
+          border-radius: 20px 20px 120px 20px;
+        }
+
+        .inputs {
+          gap: 10px;
+        }
+
+        .input input {
+          width: 75px;
+          height: 55px;
+          font-size: 24px;
+          padding: 10px;
+        }
+
+        .input label {
+          font-size: 10px;
+        }
+
+        .divider {
+          position: relative;
+          margin: 30px 0;
+        }
+
+        #calculateBtn {
+          width: 65px;
+          height: 65px;
+          font-size: 32px;
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          margin-left: 0;
+        }
+
+        .result-line {
+          font-size: 52px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="content">
+      <!-- Inputs -->
+      <div class="inputs">
+        <div class="input">
+          <label>DAY</label>
+          <input type="number" id="dayIn" placeholder="DD" />
+          <div class="error" id="dayError"></div>
+        </div>
+
+        <div class="input">
+          <label>MONTH</label>
+          <input type="number" id="monthIn" placeholder="MM" />
+          <div class="error" id="monthError"></div>
+        </div>
+
+        <div class="input">
+          <label>YEAR</label>
+          <input type="number" id="yearIn" placeholder="YYYY" />
+          <div class="error" id="yearError"></div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="divider">
+        <hr />
+        <button id="calculateBtn">&#8595;</button>
+      </div>
+
+      <!-- Results -->
+      <div class="results">
+        <div class="result-line"><span id="yearOut">--</span> years</div>
+
+        <div class="result-line"><span id="monthOut">--</span> months</div>
+
+        <div class="result-line"><span id="dayOut">--</span> days</div>
+      </div>
+    </div>
+
+    <script>
+      const dayInput = document.getElementById("dayIn");
+      const monthInput = document.getElementById("monthIn");
+      const yearInput = document.getElementById("yearIn");
+
+      const dayError = document.getElementById("dayError");
+      const monthError = document.getElementById("monthError");
+      const yearError = document.getElementById("yearError");
+
+      const dayOut = document.getElementById("dayOut");
+      const monthOut = document.getElementById("monthOut");
+      const yearOut = document.getElementById("yearOut");
+
+      const calculateBtn = document.getElementById("calculateBtn");
+
+      function clearErrors() {
+        dayError.textContent = "";
+        monthError.textContent = "";
+        yearError.textContent = "";
+      }
+
+      function validateInputs(day, month, year) {
+        clearErrors();
+        let valid = true;
+
+        if (!day) {
+          dayError.textContent = "This field is required";
+          valid = false;
+        }
+
+        if (!month) {
+          monthError.textContent = "This field is required";
+          valid = false;
+        }
+
+        if (!year) {
+          yearError.textContent = "This field is required";
+          valid = false;
+        }
+
+        if (!valid) return false;
+
+        if (month < 1 || month > 12) {
+          monthError.textContent = "Must be a valid month";
+          return false;
+        }
+
+        if (day < 1 || day > 31) {
+          dayError.textContent = "Must be a valid day";
+          return false;
+        }
+
+        const birthDate = new Date(year, month - 1, day);
+        const today = new Date();
+
+        if (
+          birthDate.getFullYear() != year ||
+          birthDate.getMonth() != month - 1 ||
+          birthDate.getDate() != day
+        ) {
+          dayError.textContent = "Must be a valid date";
+          return false;
+        }
+
+        if (birthDate > today) {
+          yearError.textContent = "Must be in past";
+          return false;
+        }
+
+        return true;
+      }
+
+      calculateBtn.addEventListener("click", () => {
+        const day = parseInt(dayInput.value);
+        const month = parseInt(monthInput.value);
+        const year = parseInt(yearInput.value);
+
+        const isValid = validateInputs(day, month, year);
+
+        if (!isValid) {
+          yearOut.textContent = "--";
+          monthOut.textContent = "--";
+          dayOut.textContent = "--";
+          return;
+        }
+
+        const today = new Date();
+        const birthDate = new Date(year, month - 1, day);
+
+        let years = today.getFullYear() - birthDate.getFullYear();
+        let months = today.getMonth() - birthDate.getMonth();
+        let days = today.getDate() - birthDate.getDate();
+
+        if (days < 0) {
+          months--;
+
+          const prevMonth = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            0,
+          ).getDate();
+
+          days += prevMonth;
+        }
+
+        if (months < 0) {
+          years--;
+          months += 12;
+        }
+
+        yearOut.textContent = years;
+        monthOut.textContent = months;
+        dayOut.textContent = days;
+      });
+    </script>
+  </body>
+</html>
