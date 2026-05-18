@@ -35,12 +35,18 @@
         gap: 20px;
       }
 
+      /* IMPORTANT FOR CYPRESS */
       .input {
+        display: flex;
+        flex-direction: row;
+      }
+
+      .field {
         display: flex;
         flex-direction: column;
       }
 
-      .input label {
+      label {
         font-size: 12px;
         letter-spacing: 3px;
         color: #ff6b6b;
@@ -48,7 +54,7 @@
         margin-bottom: 8px;
       }
 
-      .input input {
+      input {
         width: 160px;
         height: 70px;
         border: 1px solid #dcdcdc;
@@ -60,11 +66,11 @@
         transition: 0.3s;
       }
 
-      .input input:focus {
+      input:focus {
         border-color: #854dff;
       }
 
-      .input input:hover {
+      input:hover {
         border-color: #854dff;
       }
 
@@ -133,14 +139,14 @@
           gap: 10px;
         }
 
-        .input input {
+        input {
           width: 75px;
           height: 55px;
           font-size: 24px;
           padding: 10px;
         }
 
-        .input label {
+        label {
           font-size: 10px;
         }
 
@@ -168,34 +174,40 @@
 
   <body>
     <div class="content">
-      <!-- Inputs -->
       <div class="inputs">
-        <div class="input">
+        <div class="field">
           <label>DAY</label>
-          <input type="number" id="dayIn" placeholder="DD" />
-          <div class="error" id="dayError"></div>
+
+          <div class="input">
+            <input type="number" id="dayIn" placeholder="DD" />
+            <div class="error"></div>
+          </div>
         </div>
 
-        <div class="input">
+        <div class="field">
           <label>MONTH</label>
-          <input type="number" id="monthIn" placeholder="MM" />
-          <div class="error" id="monthError"></div>
+
+          <div class="input">
+            <input type="number" id="monthIn" placeholder="MM" />
+            <div class="error"></div>
+          </div>
         </div>
 
-        <div class="input">
+        <div class="field">
           <label>YEAR</label>
-          <input type="number" id="yearIn" placeholder="YYYY" />
-          <div class="error" id="yearError"></div>
+
+          <div class="input">
+            <input type="number" id="yearIn" placeholder="YYYY" />
+            <div class="error"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Divider -->
       <div class="divider">
         <hr />
         <button id="calculateBtn">&#8595;</button>
       </div>
 
-      <!-- Results -->
       <div class="results">
         <div class="result-line"><span id="yearOut">--</span> years</div>
 
@@ -206,85 +218,105 @@
     </div>
 
     <script>
-      const dayInput = document.getElementById("dayIn");
-      const monthInput = document.getElementById("monthIn");
-      const yearInput = document.getElementById("yearIn");
-
-      const dayError = document.getElementById("dayError");
-      const monthError = document.getElementById("monthError");
-      const yearError = document.getElementById("yearError");
+      const dayIn = document.getElementById("dayIn");
+      const monthIn = document.getElementById("monthIn");
+      const yearIn = document.getElementById("yearIn");
 
       const dayOut = document.getElementById("dayOut");
       const monthOut = document.getElementById("monthOut");
       const yearOut = document.getElementById("yearOut");
 
-      const calculateBtn = document.getElementById("calculateBtn");
-
-      function clearErrors() {
-        dayError.textContent = "";
-        monthError.textContent = "";
-        yearError.textContent = "";
+      function showError(input, message) {
+        input.nextElementSibling.textContent = message;
       }
 
-      function validateInputs(day, month, year) {
-        clearErrors();
-        let valid = true;
+      function clearError(input) {
+        input.nextElementSibling.textContent = "";
+      }
 
-        if (!day) {
-          dayError.textContent = "This field is required";
-          valid = false;
-        }
+      function validateDay() {
+        const value = dayIn.value;
 
-        if (!month) {
-          monthError.textContent = "This field is required";
-          valid = false;
-        }
-
-        if (!year) {
-          yearError.textContent = "This field is required";
-          valid = false;
-        }
-
-        if (!valid) return false;
-
-        if (month < 1 || month > 12) {
-          monthError.textContent = "Must be a valid month";
+        if (value === "") {
+          showError(dayIn, "This field is required");
           return false;
         }
 
-        if (day < 1 || day > 31) {
-          dayError.textContent = "Must be a valid day";
+        if (Number(value) < 1 || Number(value) > 31) {
+          showError(dayIn, "Must be a valid day");
           return false;
         }
 
-        const birthDate = new Date(year, month - 1, day);
-        const today = new Date();
-
-        if (
-          birthDate.getFullYear() != year ||
-          birthDate.getMonth() != month - 1 ||
-          birthDate.getDate() != day
-        ) {
-          dayError.textContent = "Must be a valid date";
-          return false;
-        }
-
-        if (birthDate > today) {
-          yearError.textContent = "Must be in past";
-          return false;
-        }
-
+        clearError(dayIn);
         return true;
       }
 
-      calculateBtn.addEventListener("click", () => {
-        const day = parseInt(dayInput.value);
-        const month = parseInt(monthInput.value);
-        const year = parseInt(yearInput.value);
+      function validateMonth() {
+        const value = monthIn.value;
 
-        const isValid = validateInputs(day, month, year);
+        if (value === "") {
+          showError(monthIn, "This field is required");
+          return false;
+        }
 
-        if (!isValid) {
+        if (Number(value) < 1 || Number(value) > 12) {
+          showError(monthIn, "Must be a valid month");
+          return false;
+        }
+
+        clearError(monthIn);
+        return true;
+      }
+
+      function validateYear() {
+        const value = yearIn.value;
+
+        if (value === "") {
+          showError(yearIn, "This field is required");
+          return false;
+        }
+
+        const currentYear = new Date().getFullYear();
+
+        if (Number(value) > currentYear) {
+          showError(yearIn, "Must be in past");
+          return false;
+        }
+
+        clearError(yearIn);
+        return true;
+      }
+
+      dayIn.addEventListener("blur", validateDay);
+      monthIn.addEventListener("blur", validateMonth);
+      yearIn.addEventListener("blur", validateYear);
+
+      document.getElementById("calculateBtn").addEventListener("click", () => {
+        const isDayValid = validateDay();
+        const isMonthValid = validateMonth();
+        const isYearValid = validateYear();
+
+        if (!isDayValid || !isMonthValid || !isYearValid) {
+          yearOut.textContent = "--";
+          monthOut.textContent = "--";
+          dayOut.textContent = "--";
+          return;
+        }
+
+        const day = Number(dayIn.value);
+        const month = Number(monthIn.value);
+        const year = Number(yearIn.value);
+
+        const birthDate = new Date(year, month - 1, day);
+
+        // Invalid Date check
+        if (
+          birthDate.getDate() !== day ||
+          birthDate.getMonth() !== month - 1 ||
+          birthDate.getFullYear() !== year
+        ) {
+          showError(dayIn, "Must be a valid date");
+
           yearOut.textContent = "--";
           monthOut.textContent = "--";
           dayOut.textContent = "--";
@@ -292,22 +324,21 @@
         }
 
         const today = new Date();
-        const birthDate = new Date(year, month - 1, day);
 
-        let years = today.getFullYear() - birthDate.getFullYear();
-        let months = today.getMonth() - birthDate.getMonth();
-        let days = today.getDate() - birthDate.getDate();
+        let years = today.getFullYear() - year;
+        let months = today.getMonth() - (month - 1);
+        let days = today.getDate() - day;
 
         if (days < 0) {
           months--;
 
-          const prevMonth = new Date(
+          const previousMonthDays = new Date(
             today.getFullYear(),
             today.getMonth(),
             0,
           ).getDate();
 
-          days += prevMonth;
+          days += previousMonthDays;
         }
 
         if (months < 0) {
